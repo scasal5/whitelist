@@ -523,7 +523,7 @@ if (!function_exists('itecsa_error_message')) {
                     text-decoration: none; 
                     display: inline-block;
                     transition: background 0.2s;
-                " onmouseover="this.style.background='#e1e1e1'" onmouseout="this.style.background='#f1f1f1'">✉️ Contactar Soporte</a>
+                " onmouseover="this.style.background=\'#e1e1e1\'" onmouseout="this.style.background=\'#f1f1f1\'">✉️ Contactar Soporte</a>
             </div>
             
                          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e5e5; text-align: center; color: #666; font-size: 12px;">
