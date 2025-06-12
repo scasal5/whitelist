@@ -10,7 +10,7 @@
 // ============================================================================
 
 // Usuarios autorizados explícitamente (username, email o ID)
-$ITECSA_AUTHORIZED_USERS = ['itecsa_admin', 'itecsa_dev', 'soporte@itecsa.com', 'Enrique'];
+$ITECSA_AUTHORIZED_USERS = ['itecsa_admin', 'itecsa_dev', 'soporte@itecsa.com', 'Enrique']; 
 
 // Email de alertas de seguridad
 $ITECSA_SECURITY_ALERT_EMAIL = ['santiago.casals@itecsa.com.ar'];
@@ -671,7 +671,7 @@ if (!function_exists('itecsa_log_blocked_access')) {
 if (!function_exists('itecsa_send_security_alert')) {   
     function itecsa_send_security_alert($message, $user, $action_details) {
         // Acceder a las variables globales de configuración
-        global $ITECSA_SECURITY_ALERT_EMAIL, $ITECSA_EMAIL_THROTTLE_MINUTES, $ITECSA_EMAIL_MAX_PER_HOUR, $ITECSA_EMAIL_ENABLED;
+        global $ITECSA_SECURITY_ALERT_EMAIL, $ITECSA_EMAIL_THROTTLE_MINUTES, $ITECSA_EMAIL_MAX_PER_HOUR, $ITECSA_EMAIL_ENABLED, $ITECSA_EMAIL_SUBJECT, $ITECSA_EMAIL_BODY_TEMPLATE;
         
         // Verificar si los emails están deshabilitados (desde opciones de WordPress o configuración)
         $emails_disabled = get_option('itecsa_guard_disable_emails', false) || !$ITECSA_EMAIL_ENABLED;
@@ -716,14 +716,22 @@ if (!function_exists('itecsa_send_security_alert')) {
         
         // 3. PROCEDER CON EL ENVÍO
         $to = $ITECSA_SECURITY_ALERT_EMAIL ?? ['santiago.casals@itecsa.com.ar'];
-        $subject = $ITECSA_EMAIL_SUBJECT;
-        
-        // Obtener información del sitio
+
+        // Obtener información del sitio (antes de construir el asunto)
         $site_name = get_bloginfo('name');
         $site_url = get_bloginfo('url');
+        $timestamp = current_time('mysql');
+
+        // Construir el asunto reemplazando placeholders
+        $subject = str_replace(
+            ['{SITE_NAME}', '{SITE_URL}', '{TIMESTAMP}'],
+            [$site_name, $site_url, $timestamp],
+            $ITECSA_EMAIL_SUBJECT
+        );
+
+        // Información adicional
         $ip_address = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
         $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
-        $timestamp = current_time('mysql');
         
         // Construir el cuerpo del email con información de throttling
         $email_body = str_replace(
@@ -735,8 +743,7 @@ if (!function_exists('itecsa_send_security_alert')) {
         // Headers del email
         $headers = array(
             'Content-Type: text/html; charset=UTF-8',
-            'From: ' . $site_name . ' <noreply@' . parse_url($site_url, PHP_URL_HOST) . '>',
-            'Reply-To: noreply@' . parse_url($site_url, PHP_URL_HOST)
+            'From: ' . $site_name . ' <noreply@' . parse_url($site_url, PHP_URL_HOST) . '>'
         );
         
         // Intentar enviar el email
